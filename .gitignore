@@ -1,0 +1,5 @@
+# IDE Configurations
+.vscode
+
+# CMake Build Files
+build
