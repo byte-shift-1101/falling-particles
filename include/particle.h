@@ -5,7 +5,7 @@
 #include "colorManager.h"
 
 typedef struct Particle {
-    int pos_x, pos_y;
+    Vector2 gridCoords;
     Color color;
     bool exists;
 } Particle;

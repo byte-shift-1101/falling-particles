@@ -1,16 +1,24 @@
 #include "../include/particle.h"
 
-void AddParticle(Particle* particle) {
+void AddParticle(Particle* particle, Vector2 mouseCoords) {
     *particle = (Particle) {
-        .pos_x = GetMouseX(),
-        .pos_y = GetMouseY(),
+        .gridCoords = Pixel2Grid(mouseCoords),
         .color = ColorGenerator(),
         .exists = true
     };
 }
 
 bool IsInBounds(Particle* particle) {
-    bool xBounded = (0 <= particle -> pos_x && particle -> pos_x < SCREEN_WIDTH);
-    bool yBounded = (0 <= particle -> pos_y && particle -> pos_y < SCREEN_HEIGHT);
-    return xBounded && yBounded;
+    return IsInGrid(particle -> gridCoords);
+}
+
+void DrawParticle(Particle* particle) {
+    Vector2 pixelCoords = Grid2Pixel(particle -> gridCoords);
+    DrawRectangle(
+        pixelCoords.x,
+        pixelCoords.y,
+        CELL_SIZE,
+        CELL_SIZE,
+        particle -> color
+    );
 }
