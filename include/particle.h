@@ -4,13 +4,18 @@
 #include "utils.h"
 #include "colorManager.h"
 
+#define MAX_PARTICLES (GRID_WIDTH * GRID_HEIGHT)
+
 typedef struct Particle {
-    Vector2 gridCoords;
+    IntVector2 gridCoords;
+    float _fallTimer;
     Color color;
     bool exists;
 } Particle;
 
-void AddParticle(Particle*);
+void InitParticle(Particle*, IntVector2);
 bool IsInBounds(Particle*);
+void DrawParticle(Particle*);
+void SimulateFall(Particle*);
 
 #endif

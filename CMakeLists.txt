@@ -1,15 +1,16 @@
 cmake_minimum_required(VERSION 3.0)
-project(FallingSand)
+project(FallingParticles)
 
 find_package(raylib CONFIG REQUIRED)
 
 option(BUILD_COLOR_TEST "Build the color testing tool" OFF)
 
-add_executable(FallingSand
-    src/falling_sand.c
+add_executable(FallingParticles
+    src/main.c
+    src/particle.c
     src/colorManager.c
 )
-target_link_libraries(FallingSand PRIVATE raylib)
+target_link_libraries(FallingParticles PRIVATE raylib)
 
 if (BUILD_COLOR_TEST)
     add_executable(ColorTest
