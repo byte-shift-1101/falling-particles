@@ -27,6 +27,21 @@ static IntVector2 DOWN_INT_VECTOR = {0, 1};
 static IntVector2 BOTTOM_LEFT_INT_VECTOR = {-1, 1};
 static IntVector2 BOTTOM_RIGHT_INT_VECTOR = {1, 1};
 
+// Particle* particleGrid[GRID_WIDTH][GRID_HEIGHT];
+// void ResetPresenceGrid() {
+//     for (int x = 0; x < GRID_WIDTH; x++) {
+//         for (int y = 0; y < GRID_HEIGHT; y++) {
+//             particleGrid[x][y] = NULL;
+//         }
+//     }
+// }
+
+// void RegisterPresence(Particle* particles, int particleCount) {
+//     for (int i = 0; i < particleCount; i++) {
+//         particleGrid[particles[i].gridCoords.x][particles[i].gridCoords.y] = &particles[i];
+//     }
+// }
+
 inline IntVector2 Grid2Pixel(IntVector2 gridCoords) {
     int pixelX = GRID_BORDER + gridCoords.x * CELL_SIZE;
     int pixelY = GRID_BORDER + gridCoords.y * CELL_SIZE;

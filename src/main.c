@@ -12,6 +12,8 @@ void StartSimulation() {
         particles[i].exists = false;
     }
     particleCount = 0;
+
+    // ResetPresenceGrid();
 }
 
 void LoopSimulation() {
@@ -30,6 +32,9 @@ void LoopSimulation() {
         DrawParticle(&particles[i]);
         SimulateFall(&particles[i], particles, particleCount);
     }
+
+    // ResetPresenceGrid();
+    // RegisterPresence(particles, particleCount);
 }
 
 void EndSimulation() {

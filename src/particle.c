@@ -72,8 +72,8 @@ void SimulateFall(Particle* particle, Particle* particles, int particleCount) {
         Particle* particleBelowLeft = ParticleAt(gridCoordsLeft, particles, particleCount);
         Particle* particleBelowRight = ParticleAt(gridCoordsRight, particles, particleCount);
 
-        bool canFallLeft = particleBelowLeft == NULL && IsInGrid(gridCoordsLeft);
-        bool canFallRight = particleBelowRight == NULL && IsInGrid(gridCoordsRight);
+        bool canFallLeft = !IsAtBottom(particle) && (particleBelowLeft == NULL || !particleBelowLeft -> fallen) && IsInGrid(gridCoordsLeft);
+        bool canFallRight = !IsAtBottom(particle) && (particleBelowRight == NULL || !particleBelowRight -> fallen) && IsInGrid(gridCoordsRight);
 
         if (canFallLeft && canFallRight) {
             if (rand() % 2 == 0) {
@@ -89,7 +89,7 @@ void SimulateFall(Particle* particle, Particle* particles, int particleCount) {
             particle -> fallen = true;
         }
         
-        particle -> velocity = ZERO_VECTOR;
+        // particle -> velocity = ZERO_VECTOR;
         ResetStopwatch(&(particle -> fallingTimeWatch));
     }
 }

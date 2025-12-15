@@ -3,7 +3,7 @@
 
 #include "utils.h"
 
-#define HUE_STEP 20
+#define HUE_STEP 0.33
 #define SATURATION 100
 #define LIGHTNESS 50
 #define MAX_Hue 360
