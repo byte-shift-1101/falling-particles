@@ -9,9 +9,9 @@
 #define MAX_Hue 360
 #define MAX_SL 100
 
-static int initialHue = 0;
-int* HSL2RGB(float, float, float);
-int* _Hue2RGB(float);
+static double initialHue = 0;
+int* HSL2RGB(double, double, double);
+int* _Hue2RGB(double);
 Color ColorGenerator();
 
 #endif

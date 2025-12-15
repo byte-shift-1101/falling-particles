@@ -6,10 +6,12 @@
 #include <stdbool.h>
 #include <math.h>
 #include <time.h>
-#include "raylib.h"
 #include "IntVector2.h"
+#include "Vector2.h"
+#include "timer.h"
+#include "raylib.h"
 
-#define GRID_WIDTH 40
+#define GRID_WIDTH 100
 #define GRID_HEIGHT 100
 #define GRID_BORDER 10
 #define CELL_SIZE 10
@@ -18,8 +20,12 @@
 #define SCREEN_HEIGHT (GRID_HEIGHT * CELL_SIZE + 2 * GRID_BORDER)
 
 static Vector2 ZERO_VECTOR = {0.0f, 0.0f};
-static Vector2 GRAVITY = {0.0f, 0.05f};
+static Vector2 GRAVITY = {0.0f, 200.0f};
+
 IntVector2 mouseCoords;
+static IntVector2 DOWN_INT_VECTOR = {0, 1};
+static IntVector2 BOTTOM_LEFT_INT_VECTOR = {-1, 1};
+static IntVector2 BOTTOM_RIGHT_INT_VECTOR = {1, 1};
 
 inline IntVector2 Grid2Pixel(IntVector2 gridCoords) {
     int pixelX = GRID_BORDER + gridCoords.x * CELL_SIZE;
@@ -44,19 +50,14 @@ inline bool IsPixelInGrid(IntVector2 pixelCoords) {
     return IsInGrid(gridCoords);
 }
 
-#define COOLDOWN_PERIOD 0.1f
-static double cooldownTimer;
-double deltaTime;
+#define CLICK_COOLDOWN_DURATION 0.01f
 
-inline void RestartCooldown() { cooldownTimer = COOLDOWN_PERIOD; }
-inline bool IsInCooldown() { return cooldownTimer > 0; }
-inline void DecrementCooldown() {
-    if (IsInCooldown()) cooldownTimer -= deltaTime;
-}
+Timer clickCooldown;
+double deltaTime;
 
 inline void InitSystem() {
     srand((unsigned int) time(NULL));
-    cooldownTimer = 0;
+    InitTimer(&clickCooldown, CLICK_COOLDOWN_DURATION);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Falling Particle Simulation");
 }
 
@@ -64,7 +65,7 @@ inline void SystemLoop() {
     ClearBackground(BLACK);
     deltaTime = GetFrameTime();
     mouseCoords = (IntVector2) {GetMouseX(), GetMouseY()};
-    DecrementCooldown();
+    DecrementTimer(&clickCooldown, deltaTime);
 }
 
 inline void CloseSystem() {

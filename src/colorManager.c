@@ -1,11 +1,11 @@
 #include "../include/colorManager.h"
 
-int* HSL2RGB(float h, float s, float l) {
-    float chroma = (1 - fabs(2 * l - 1)) * s;
-    float rgb_face_index = h / 60;
-    float x = (1 - fabs(fmodf(rgb_face_index, 2.0) - 1)) * chroma;
+int* HSL2RGB(double h, double s, double l) {
+    double chroma = (1 - fabs(2 * l - 1)) * s;
+    double rgb_face_index = h / 60;
+    double x = (1 - fabs(fmodf(rgb_face_index, 2.0) - 1)) * chroma;
 
-    float r1 = 0, g1 = 0, b1 = 0;
+    double r1 = 0, g1 = 0, b1 = 0;
     switch ((int)rgb_face_index) {
     case 0:
         r1 = chroma;
@@ -33,7 +33,7 @@ int* HSL2RGB(float h, float s, float l) {
         break;
     }
 
-    float m = l - chroma / 2;
+    double m = l - chroma / 2;
     int* rgb = (int*) malloc(3 * sizeof(int));
     rgb[0] = (r1 + m) * 255;
     rgb[1] = (g1 + m) * 255;
@@ -41,13 +41,13 @@ int* HSL2RGB(float h, float s, float l) {
     return rgb;
 }
 
-int* _Hue2RGB(float h) {
-    return HSL2RGB(fmodf(h, MAX_Hue), (float)SATURATION / MAX_SL, (float)LIGHTNESS / MAX_SL);
+int* _Hue2RGB(double h) {
+    return HSL2RGB(fmodf(h, MAX_Hue), (double)SATURATION / MAX_SL, (double)LIGHTNESS / MAX_SL);
 }
 
 Color ColorGenerator() {
     int* rgb = _Hue2RGB(initialHue);
-    initialHue = (initialHue + HUE_STEP) % MAX_Hue;
+    initialHue = fmod(initialHue + HUE_STEP, MAX_Hue);
     return (Color) {
         .r = rgb[0],
         .g = rgb[1],

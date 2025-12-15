@@ -9,15 +9,15 @@
 typedef struct Particle {
     IntVector2 gridCoords;
     Vector2 velocity, acceleration;
-    float _fallTimer;
+    Stopwatch fallingTimeWatch;
     Color color;
     bool exists, fallen;
 } Particle;
 
 void InitParticle(Particle*, IntVector2);
-bool IsInBounds(Particle*);
+Particle* ParticleAt(IntVector2, Particle*, int);
+bool IsAtBottom(Particle*);
+void SimulateFall(Particle*, Particle*, int);
 void DrawParticle(Particle*);
-Particle* ParticleAt(Particle*, IntVector2);
-void SimulateFall(Particle*, Particle*);
 
 #endif
