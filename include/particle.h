@@ -15,6 +15,7 @@ typedef struct Particle {
 } Particle;
 
 void InitParticle(Particle*, IntVector2);
+void InitParticleBlob(IntVector2, double, double, Particle*, int*);
 Particle* ParticleAt(IntVector2, Particle*, int);
 bool IsAtBottom(Particle*);
 void SimulateFall(Particle*, Particle*, int);

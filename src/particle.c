@@ -1,8 +1,8 @@
 #include "../include/particle.h"
 
-void InitParticle(Particle* particle, IntVector2 mouseCoords) {
+void InitParticle(Particle* particle, IntVector2 gridCoords) {
     *particle = (Particle) {
-        .gridCoords = Pixel2Grid(mouseCoords),
+        .gridCoords = gridCoords,
         .velocity = ZERO_VECTOR,
         .acceleration = ZERO_VECTOR,
         .color = ColorGenerator(),
@@ -11,6 +11,24 @@ void InitParticle(Particle* particle, IntVector2 mouseCoords) {
     };
 
     InitStopwatch(&(particle -> fallingTimeWatch));
+}
+
+void InitParticleBlob(IntVector2 gridCoords, double radius, double probability, Particle* particles, int* particleCount) {
+    int radiusInt = ceil(radius);
+    int particlesAdded = *particleCount;
+    for (int i = -radiusInt; i <= radiusInt; i++) {
+        for (int j = -radiusInt; j <= radiusInt; j++) {
+            IntVector2 particleCoords;
+            AddIntVector2(&particleCoords, gridCoords, (IntVector2) {i, j});
+
+            double probValue = (rand() % 101) / 100.0;
+            if (IsInGrid(particleCoords) && probValue <= probability && LengthIntVector2((IntVector2) {i, j}) <= radius && !ParticleAt(particleCoords, particles, particlesAdded)) {
+                InitParticle(&particles[particlesAdded], particleCoords);
+                particlesAdded++;
+            }
+        }
+    }
+    *particleCount = particlesAdded;
 }
 
 Particle* ParticleAt(IntVector2 targetGridCoords, Particle* particles, int particleCount) {
@@ -44,6 +62,10 @@ bool CanFall(Particle* particle, Particle* particleBelow) {
 }
 
 void SimulateFall(Particle* particle, Particle* particles, int particleCount) {
+    if (IsAtBottom(particle)) {
+        particle -> fallen = true;
+        return;
+    }
     if (particle -> fallen) return;
 
     IncrementStopwatch(&(particle -> fallingTimeWatch), deltaTime);
@@ -85,7 +107,7 @@ void SimulateFall(Particle* particle, Particle* particles, int particleCount) {
             particle -> gridCoords.x--;
         } else if (canFallRight) {
             particle -> gridCoords.x++;
-        } else {            
+        } else {
             particle -> fallen = true;
         }
         

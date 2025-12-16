@@ -27,14 +27,14 @@ static IntVector2 DOWN_INT_VECTOR = {0, 1};
 static IntVector2 BOTTOM_LEFT_INT_VECTOR = {-1, 1};
 static IntVector2 BOTTOM_RIGHT_INT_VECTOR = {1, 1};
 
-// Particle* particleGrid[GRID_WIDTH][GRID_HEIGHT];
-// void ResetPresenceGrid() {
-//     for (int x = 0; x < GRID_WIDTH; x++) {
-//         for (int y = 0; y < GRID_HEIGHT; y++) {
-//             particleGrid[x][y] = NULL;
-//         }
-//     }
-// }
+int particleGrid[GRID_WIDTH][GRID_HEIGHT];
+inline void ResetPresenceGrid() {
+    for (int x = 0; x < GRID_WIDTH; x++) {
+        for (int y = 0; y < GRID_HEIGHT; y++) {
+            particleGrid[x][y] = 0;
+        }
+    }
+}
 
 // void RegisterPresence(Particle* particles, int particleCount) {
 //     for (int i = 0; i < particleCount; i++) {
@@ -74,6 +74,8 @@ inline void InitSystem() {
     srand((unsigned int) time(NULL));
     InitTimer(&clickCooldown, CLICK_COOLDOWN_DURATION);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Falling Particle Simulation");
+    // SetTargetFPS(1);
+    HideCursor();
 }
 
 inline void SystemLoop() {
@@ -81,9 +83,15 @@ inline void SystemLoop() {
     deltaTime = GetFrameTime();
     mouseCoords = (IntVector2) {GetMouseX(), GetMouseY()};
     DecrementTimer(&clickCooldown, deltaTime);
+
+    if (IsCursorOnScreen()) {
+        DrawCircleLines(mouseCoords.x, mouseCoords.y, 2.5f * CELL_SIZE, WHITE);
+        // DrawCircleLines(mouseCoords.x, mouseCoords.y, 5.0f, WHITE);
+    }
 }
 
 inline void CloseSystem() {
+    ShowCursor();
     CloseWindow();
 }
 
