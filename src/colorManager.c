@@ -1,4 +1,5 @@
 #include "../include/colorManager.h"
+#include "../include/simManager.h"
 
 int* HSL2RGB(double h, double s, double l) {
     double chroma = (1 - fabs(2 * l - 1)) * s;
@@ -45,9 +46,9 @@ int* _Hue2RGB(double h) {
     return HSL2RGB(fmodf(h, MAX_Hue), (double)SATURATION / MAX_SL, (double)LIGHTNESS / MAX_SL);
 }
 
-Color ColorGenerator() {
-    int* rgb = _Hue2RGB(initialHue);
-    initialHue = fmod(initialHue + HUE_STEP, MAX_Hue);
+Color ColorGenerator(GameState* game) {
+    int* rgb = _Hue2RGB(game -> currentHue);
+    game -> currentHue = fmod(game -> currentHue + HUE_STEP, MAX_Hue);
     return (Color) {
         .r = rgb[0],
         .g = rgb[1],

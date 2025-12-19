@@ -1,7 +1,6 @@
 #ifndef INT_VECTOR2_H
 #define INT_VECTOR2_H
 
-#include <stdlib.h>
 #include <math.h>
 
 typedef struct IntVector2 {

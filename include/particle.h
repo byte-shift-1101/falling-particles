@@ -1,13 +1,9 @@
 #ifndef PARTICLE_H
 #define PARTICLE_H
 
-#include "utils.h"
+#include "config.h"
+#include "timer.h"
 #include "colorManager.h"
-
-#define MAX_PARTICLES (GRID_WIDTH * GRID_HEIGHT)
-
-#define MULTI_SPAWN_RADIUS 25.0
-#define MULTI_SPAWN_PROBABILITY 0.25
 
 typedef struct Particle {
     IntVector2 gridCoords;
@@ -16,25 +12,14 @@ typedef struct Particle {
     Color color;
 } Particle;
 
-int SpawnParticle(IntVector2);
-int MultiSpawnParticle(IntVector2);
-Particle* ParticleAt(IntVector2);
-void SimulateFall(Particle*);
+Particle* ParticleAt(IntVector2, GameState*);
+bool IsAvailableAt(IntVector2, GameState*);
+int SpawnParticle(IntVector2, GameState*);
+int MultiSpawnParticle(IntVector2, GameState*);
+
+void MoveParticle(Particle*, IntVector2, GameState*);
+void SimulateFall(Particle*, GameState*);
+
 void DrawParticle(Particle*);
-
-Particle* particleGrid[GRID_WIDTH][GRID_HEIGHT];
-inline void ResetPresenceGrid() {
-    for (int x = 0; x < GRID_WIDTH; x++) {
-        for (int y = 0; y < GRID_HEIGHT; y++) {
-            particleGrid[x][y] = NULL;
-        }
-    }
-}
-
-inline void RegisterPresence(Particle* particles, int particleCount) {
-    for (int i = 0; i < particleCount; i++) {
-        particleGrid[particles[i].gridCoords.x][particles[i].gridCoords.y] = &particles[i];
-    }
-}
 
 #endif
