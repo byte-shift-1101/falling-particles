@@ -10,6 +10,7 @@
 #include "Vector2.h"
 #include "timer.h"
 #include "raylib.h"
+#include <string.h>
 
 #define GRID_WIDTH 100
 #define GRID_HEIGHT 100
@@ -26,21 +27,6 @@ IntVector2 mouseCoords;
 static IntVector2 DOWN_INT_VECTOR = {0, 1};
 static IntVector2 BOTTOM_LEFT_INT_VECTOR = {-1, 1};
 static IntVector2 BOTTOM_RIGHT_INT_VECTOR = {1, 1};
-
-int particleGrid[GRID_WIDTH][GRID_HEIGHT];
-inline void ResetPresenceGrid() {
-    for (int x = 0; x < GRID_WIDTH; x++) {
-        for (int y = 0; y < GRID_HEIGHT; y++) {
-            particleGrid[x][y] = 0;
-        }
-    }
-}
-
-// void RegisterPresence(Particle* particles, int particleCount) {
-//     for (int i = 0; i < particleCount; i++) {
-//         particleGrid[particles[i].gridCoords.x][particles[i].gridCoords.y] = &particles[i];
-//     }
-// }
 
 inline IntVector2 Grid2Pixel(IntVector2 gridCoords) {
     int pixelX = GRID_BORDER + gridCoords.x * CELL_SIZE;
@@ -65,17 +51,27 @@ inline bool IsPixelInGrid(IntVector2 pixelCoords) {
     return IsInGrid(gridCoords);
 }
 
-#define CLICK_COOLDOWN_DURATION 0.01f
+inline bool FlipCoin(double probability) {
+    double randValue = (rand() % 101) / 100.0;
+    return randValue <= probability;
+}
 
-Timer clickCooldown;
+#define CLICK_COOLDOWN_DURATION 0.01f
+#define FPS_DURATION 1.0f
+
+Timer clickCooldown, fpsTimer;
 double deltaTime;
+char FPS[40];
 
 inline void InitSystem() {
     srand((unsigned int) time(NULL));
     InitTimer(&clickCooldown, CLICK_COOLDOWN_DURATION);
+    InitTimer(&fpsTimer, FPS_DURATION);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Falling Particle Simulation");
     // SetTargetFPS(1);
     HideCursor();
+
+    snprintf(FPS, sizeof(FPS), "FPS: %lf", 60.0);
 }
 
 inline void SystemLoop() {
@@ -83,11 +79,18 @@ inline void SystemLoop() {
     deltaTime = GetFrameTime();
     mouseCoords = (IntVector2) {GetMouseX(), GetMouseY()};
     DecrementTimer(&clickCooldown, deltaTime);
+    DecrementTimer(&fpsTimer, deltaTime);
 
     if (IsCursorOnScreen()) {
         DrawCircleLines(mouseCoords.x, mouseCoords.y, 2.5f * CELL_SIZE, WHITE);
         // DrawCircleLines(mouseCoords.x, mouseCoords.y, 5.0f, WHITE);
     }
+
+    if (!IsTimeRemaining(&fpsTimer)) {
+        snprintf(FPS, sizeof(FPS), "FPS: %lf", (double) 1 / deltaTime);
+        RestartTimer(&fpsTimer);
+    }
+    DrawText(FPS, 10, 10, 20, WHITE);
 }
 
 inline void CloseSystem() {

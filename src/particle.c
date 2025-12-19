@@ -1,117 +1,90 @@
 #include "../include/particle.h"
 
-void InitParticle(Particle* particle, IntVector2 gridCoords) {
-    *particle = (Particle) {
+int SpawnParticle(IntVector2 gridCoords) {
+    if (!IsInGrid(gridCoords) || ParticleAt(gridCoords)) return 0;
+
+    particleGrid[gridCoords.x][gridCoords.y] = malloc(sizeof(Particle));
+    *particleGrid[gridCoords.x][gridCoords.y] = (Particle) {
         .gridCoords = gridCoords,
         .velocity = ZERO_VECTOR,
         .acceleration = ZERO_VECTOR,
-        .color = ColorGenerator(),
-        .exists = true,
-        .fallen = false
+        .color = ColorGenerator()
     };
 
-    InitStopwatch(&(particle -> fallingTimeWatch));
+    InitStopwatch(&(particleGrid[gridCoords.x][gridCoords.y] -> fallingTimeWatch));
+    return 1;
 }
 
-void InitParticleBlob(IntVector2 gridCoords, double radius, double probability, Particle* particles, int* particleCount) {
-    int radiusInt = ceil(radius);
-    int particlesAdded = *particleCount;
+int MultiSpawnParticle(IntVector2 gridCoords) {
+    int radiusInt = ceil(MULTI_SPAWN_RADIUS);
+    int spawnedParticles = 0;
+
     for (int i = -radiusInt; i <= radiusInt; i++) {
         for (int j = -radiusInt; j <= radiusInt; j++) {
+            if (!(LengthIntVector2((IntVector2) {i, j}) <= MULTI_SPAWN_RADIUS && FlipCoin(MULTI_SPAWN_PROBABILITY))) continue;
+
             IntVector2 particleCoords;
             AddIntVector2(&particleCoords, gridCoords, (IntVector2) {i, j});
 
-            double probValue = (rand() % 101) / 100.0;
-            if (IsInGrid(particleCoords) && probValue <= probability && LengthIntVector2((IntVector2) {i, j}) <= radius && !ParticleAt(particleCoords, particles, particlesAdded)) {
-                InitParticle(&particles[particlesAdded], particleCoords);
-                particlesAdded++;
+            if (IsInGrid(particleCoords) && !ParticleAt(particleCoords)) {
+                spawnedParticles += SpawnParticle(particleCoords);
             }
         }
     }
-    *particleCount = particlesAdded;
+
+    return spawnedParticles;
 }
 
-Particle* ParticleAt(IntVector2 targetGridCoords, Particle* particles, int particleCount) {
-    for (int i = 0; i < particleCount; i++) {
-        if (EqualsIntVector2(particles[i].gridCoords, targetGridCoords)) {
-            return &particles[i];
-        }
-    }
-    return NULL;
+Particle* ParticleAt(IntVector2 targetGridCoords) {
+    if (!IsInGrid(targetGridCoords)) return NULL;
+    return particleGrid[targetGridCoords.x][targetGridCoords.y];
 }
 
-bool IsAtBottom(Particle* particle) {
-    return particle -> gridCoords.y == GRID_HEIGHT - 1;
+void SwapParticles(Particle** a, Particle** b) {
+    Particle* temp = *a;
+    *a = *b;
+    *b = temp;
 }
 
-bool HasStoppingParticleBelow(Particle* particleBelow) {
-    return (particleBelow != NULL && particleBelow -> fallen);
-}
-
-bool HasFallingParticleBelow(Particle* particleBelow) {
-    return (particleBelow != NULL && !particleBelow -> fallen);
-}
-
-bool HasFallingSpaceBelow(Particle* particle, Particle* particleBelow) {
-    return !(IsAtBottom(particle) || HasStoppingParticleBelow(particleBelow));
-}
-
-bool CanFall(Particle* particle, Particle* particleBelow) {
-    bool fallWaitElapsed = IsTimeElapsed(&(particle -> fallingTimeWatch), 1.0f / particle -> velocity.y);
-    return HasFallingSpaceBelow(particle, particleBelow) && fallWaitElapsed;
-}
-
-void SimulateFall(Particle* particle, Particle* particles, int particleCount) {
-    if (IsAtBottom(particle)) {
-        particle -> fallen = true;
-        return;
-    }
-    if (particle -> fallen) return;
-
+void SimulateFall(Particle* particle) {
     IncrementStopwatch(&(particle -> fallingTimeWatch), deltaTime);
     
-    IntVector2 gridCoordsBelow;
+    IntVector2 gridCoordsBelow, gridCoordsBottomLeft, gridCoordsBottomRight;
     AddIntVector2(&gridCoordsBelow, particle -> gridCoords, DOWN_INT_VECTOR);
-    Particle* particleBelow = ParticleAt(gridCoordsBelow, particles, particleCount);
+    AddIntVector2(&gridCoordsBottomLeft, particle -> gridCoords, BOTTOM_LEFT_INT_VECTOR);
+    AddIntVector2(&gridCoordsBottomRight, particle -> gridCoords, BOTTOM_RIGHT_INT_VECTOR);
+    Particle* particleBelow = ParticleAt(gridCoordsBelow);
+    Particle* particleBottomLeft = ParticleAt(gridCoordsBottomLeft);
+    Particle* particleBottomRight = ParticleAt(gridCoordsBottomRight);
     
     Vector2 deltaVelocity;
     ScaleVector2(&deltaVelocity, GRAVITY, deltaTime);
     AddVector2(&(particle -> velocity), particle -> velocity, deltaVelocity);
 
-    if (CanFall(particle, particleBelow)) {
-        if (HasFallingParticleBelow(particleBelow)) {
-            particle -> velocity.y = particleBelow -> velocity.y;
-        }
-        
-        particle -> gridCoords.y++;
+    if (particleBelow == NULL && IsInGrid(gridCoordsBelow) && IsTimeElapsed(&(particle -> fallingTimeWatch), (double)1 / particle -> velocity.y)) {
+        SwapParticles(&particleGrid[particle -> gridCoords.x][particle -> gridCoords.y], &particleGrid[gridCoordsBelow.x][gridCoordsBelow.y]);
+        AddIntVector2(&(particle -> gridCoords), particle -> gridCoords, DOWN_INT_VECTOR);
         ResetStopwatch(&(particle -> fallingTimeWatch));
-    }
-    
-    if (!HasFallingSpaceBelow(particle, particleBelow)) {
-        IntVector2 gridCoordsLeft, gridCoordsRight;
-        AddIntVector2(&gridCoordsLeft, particle -> gridCoords, BOTTOM_LEFT_INT_VECTOR);
-        AddIntVector2(&gridCoordsRight, particle -> gridCoords, BOTTOM_RIGHT_INT_VECTOR);
-        Particle* particleBelowLeft = ParticleAt(gridCoordsLeft, particles, particleCount);
-        Particle* particleBelowRight = ParticleAt(gridCoordsRight, particles, particleCount);
+    } else if (IsTimeElapsed(&(particle -> fallingTimeWatch), (double)1 / particle -> velocity.y)) {
+        bool canFallBottomLeft = particleBottomLeft == NULL && IsInGrid(gridCoordsBottomLeft);
+        bool canFallBottomRight = particleBottomRight == NULL && IsInGrid(gridCoordsBottomRight);
 
-        bool canFallLeft = !IsAtBottom(particle) && (particleBelowLeft == NULL || !particleBelowLeft -> fallen) && IsInGrid(gridCoordsLeft);
-        bool canFallRight = !IsAtBottom(particle) && (particleBelowRight == NULL || !particleBelowRight -> fallen) && IsInGrid(gridCoordsRight);
-
-        if (canFallLeft && canFallRight) {
-            if (rand() % 2 == 0) {
-                particle -> gridCoords.x--;
+        if (canFallBottomLeft && canFallBottomRight) {
+            if (FlipCoin(0.5)) {
+                SwapParticles(&particleGrid[particle -> gridCoords.x][particle -> gridCoords.y], &particleGrid[gridCoordsBottomLeft.x][gridCoordsBottomLeft.y]);
+                AddIntVector2(&(particle -> gridCoords), particle -> gridCoords, BOTTOM_LEFT_INT_VECTOR);
             } else {
-                particle -> gridCoords.x++;
+                SwapParticles(&particleGrid[particle -> gridCoords.x][particle -> gridCoords.y], &particleGrid[gridCoordsBottomRight.x][gridCoordsBottomRight.y]);
+                AddIntVector2(&(particle -> gridCoords), particle -> gridCoords, BOTTOM_RIGHT_INT_VECTOR);
             }
-        } else if (canFallLeft) {
-            particle -> gridCoords.x--;
-        } else if (canFallRight) {
-            particle -> gridCoords.x++;
-        } else {
-            particle -> fallen = true;
+        } else if (canFallBottomLeft) {
+            SwapParticles(&particleGrid[particle -> gridCoords.x][particle -> gridCoords.y], &particleGrid[gridCoordsBottomLeft.x][gridCoordsBottomLeft.y]);
+            AddIntVector2(&(particle -> gridCoords), particle -> gridCoords, BOTTOM_LEFT_INT_VECTOR);
+        } else if (canFallBottomRight) {
+            SwapParticles(&particleGrid[particle -> gridCoords.x][particle -> gridCoords.y], &particleGrid[gridCoordsBottomRight.x][gridCoordsBottomRight.y]);
+            AddIntVector2(&(particle -> gridCoords), particle -> gridCoords, BOTTOM_RIGHT_INT_VECTOR);
         }
         
-        // particle -> velocity = ZERO_VECTOR;
         ResetStopwatch(&(particle -> fallingTimeWatch));
     }
 }
