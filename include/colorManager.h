@@ -6,5 +6,6 @@
 int* HSL2RGB(double, double, double);
 int* _Hue2RGB(double);
 Color ColorGenerator(GameState*);
+Color SandColorGenerator();
 
 #endif

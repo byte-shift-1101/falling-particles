@@ -46,6 +46,24 @@ int* _Hue2RGB(double h) {
     return HSL2RGB(fmodf(h, MAX_Hue), (double)SATURATION / MAX_SL, (double)LIGHTNESS / MAX_SL);
 }
 
+Color SandColorGenerator() {
+    static const Color sandShades[] = {
+        {238, 235, 204, 255},  // Light sand       ~10%
+        {226, 219, 175, 255},  // Warm sand         ~20%
+        {218, 207, 162, 255},  // Classic sand      ~40% (prominent)
+        {213, 196, 150, 255},  // Medium sand       ~20%
+        {208, 186, 137, 255},  // Dark sand         ~10%
+    };
+    // Cumulative weights out of 100
+    static const int cumWeights[] = {10, 20, 70, 90, 100};
+
+    int r = GetRandomValue(1, 100);
+    for (int i = 0; i < 5; i++) {
+        if (r <= cumWeights[i]) return sandShades[i];
+    }
+    return sandShades[2];
+}
+
 Color ColorGenerator(GameState* game) {
     int* rgb = _Hue2RGB(game -> currentHue);
     game -> currentHue = fmod(game -> currentHue + HUE_STEP, MAX_Hue);

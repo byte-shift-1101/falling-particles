@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(FallingParticles)
 
+set(BUILD_SHARED_LIBS OFF)
 find_package(raylib CONFIG REQUIRED)
 
 option(BUILD_COLOR_TEST "Build the color testing tool" OFF)

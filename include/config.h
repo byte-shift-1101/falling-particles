@@ -34,8 +34,8 @@ typedef struct GameState GameState;
 #define FPS_DURATION 1.0f
 
 // Particle Spawning Parameters
-#define MULTI_SPAWN_RADIUS 3.0
-#define MULTI_SPAWN_PROBABILITY 0.25
+#define INITIAL_MULTI_SPAWN_RADIUS 3.0
+#define INITIAL_MULTI_SPAWN_PROBABILITY 0.25
 
 // Simulation Parameters
 #define MAX_PARTICLES (GRID_WIDTH * GRID_HEIGHT)

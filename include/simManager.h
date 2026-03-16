@@ -22,9 +22,12 @@ typedef struct GameState {
 
     Particle* particleGrid[GRID_WIDTH][GRID_HEIGHT];
     int particleCount;
+    float particleSpawnRadius;
+    float particleSpawnDensity;
 
     // Color Generation
     double currentHue;
+    bool useSandColor;
 } GameState;
 
 inline void InitGameState(GameState* game) {
@@ -40,8 +43,10 @@ inline void InitGameState(GameState* game) {
         }
     }
     game -> particleCount = 0;
-
+    game -> particleSpawnRadius = INITIAL_MULTI_SPAWN_RADIUS;
+    game -> particleSpawnDensity = INITIAL_MULTI_SPAWN_PROBABILITY;
     game -> currentHue = 0.0;
+    game -> useSandColor = false;
 }
 
 inline void InitSystem(GameState* game) {
@@ -71,7 +76,8 @@ inline void StartSystemLoop(GameState* game) {
 inline void EndSystemLoop(GameState* game) {
     if (IsCursorOnScreen()) {
         IntVector2 pixelCoords = Grid2Pixel(game -> mouseGridCoords);
-        DrawCircleLines(pixelCoords.x, pixelCoords.y, MULTI_SPAWN_RADIUS * CELL_SIZE, WHITE);
+        DrawCircleLines(pixelCoords.x, pixelCoords.y, game -> particleSpawnRadius * CELL_SIZE, WHITE);
+        DrawCircle(pixelCoords.x, pixelCoords.y, CELL_SIZE, (Color){255, 255, 255, 50});
     }
     
     DrawText(game -> displayFPS, 10, 10, 20, WHITE);

@@ -19,7 +19,7 @@ int SpawnParticle(IntVector2 gridCoords, GameState* game) {
         .gridCoords = gridCoords,
         .velocity = ZERO_VECTOR,
         .acceleration = ZERO_VECTOR,
-        .color = ColorGenerator(game)
+        .color = game->useSandColor ? SandColorGenerator() : ColorGenerator(game)
     };    
 
     InitStopwatch(&game -> particleGrid[gridCoords.x][gridCoords.y] -> fallingTimeWatch);
@@ -29,12 +29,12 @@ int SpawnParticle(IntVector2 gridCoords, GameState* game) {
 int MultiSpawnParticle(IntVector2 gridCoords, GameState* game) {
     assert(IsAvailableAt(gridCoords, game));
 
-    int radiusInt = ceil(MULTI_SPAWN_RADIUS);
+    int radiusInt = ceil(game -> particleSpawnRadius);
     int spawnedParticles = 0;
 
     for (int i = -radiusInt; i <= radiusInt; i++) {
         for (int j = -radiusInt; j <= radiusInt; j++) {
-            if (!(LengthIntVector2((IntVector2) {i, j}) <= MULTI_SPAWN_RADIUS && FlipCoin(MULTI_SPAWN_PROBABILITY))) continue;
+            if (!(LengthIntVector2((IntVector2) {i, j}) <= game -> particleSpawnRadius && FlipCoin(game -> particleSpawnDensity))) continue;
 
             IntVector2 particleCoords;
             AddIntVector2(&particleCoords, gridCoords, (IntVector2) {i, j});
