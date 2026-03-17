@@ -3,6 +3,11 @@
 
 # CMake Build Files
 build
+CMakeFiles
+CMakeCache.txt
+
+# Dependencies
+_deps
 
 # Executable Files
 .exe
